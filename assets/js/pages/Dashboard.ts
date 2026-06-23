@@ -1,6 +1,7 @@
 import { Head } from "@inertiajs/vue3"
 import { defineComponent, h } from "vue"
 import AlertPreviewList from "../components/AlertPreviewList"
+import DistrictMap from "../components/DistrictMap"
 import KpiCard, { type KpiStatus } from "../components/KpiCard"
 import LoadTrendChart from "../components/LoadTrendChart"
 import {
@@ -68,9 +69,6 @@ const kpis: Array<{
 export default defineComponent({
   name: "Dashboard",
   setup() {
-    const placeholderClass =
-      "flex min-h-64 items-center justify-center rounded-lg border border-dashed border-slate-600 bg-slate-900/45 p-6 text-center text-sm leading-6 text-slate-300"
-
     return () =>
       h(
         "main",
@@ -146,13 +144,13 @@ export default defineComponent({
                   h(
                     "p",
                     { class: "mt-2 text-sm leading-6 text-slate-400" },
-                    "Fictional district geography will appear here."
+                    "Schematic view of synthetic district coordinates and operating status."
                   ),
-                  h(
-                    "div",
-                    { class: ["mt-5", placeholderClass], role: "status" },
-                    "District map visualization will be implemented in a later step."
-                  ),
+                  h("div", { class: "mt-5" }, [
+                    h(DistrictMap, {
+                      districts: mockDistricts,
+                    }),
+                  ]),
                 ]
               ),
             ]),

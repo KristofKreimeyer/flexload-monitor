@@ -8,9 +8,11 @@
     "@inertiajs/vue3": "^2.2.18",
     "axios": "^1.13.2",
     "echarts": "^6.1.0",
+    "leaflet": "^1.9.4",
     "vue": "^3.5.24"
   },
   "devDependencies": {
+    "@types/leaflet": "^1.9.21",
     "typescript": "^5.9.3"
   }
 }
