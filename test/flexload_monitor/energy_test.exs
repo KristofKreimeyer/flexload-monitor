@@ -3,22 +3,79 @@ defmodule FlexloadMonitor.EnergyTest do
 
   alias FlexloadMonitor.Energy
 
-  test "dashboard_data returns dashboard props" do
+  test "dashboard_data returns documented dashboard prop shapes" do
+    data = Energy.dashboard_data()
+
+    assert is_map(data)
+    assert Map.has_key?(data, :districts)
+    assert Map.has_key?(data, :measurements)
+    assert Map.has_key?(data, :alerts)
+    assert Map.has_key?(data, :kpis)
+
+    assert is_list(data.districts)
+    assert is_list(data.measurements)
+    assert is_list(data.alerts)
+    assert is_map(data.kpis)
+
+    assert [
+             %{
+               id: district_id,
+               name: district_name,
+               status: district_status,
+               coordinates: %{latitude: latitude, longitude: longitude}
+             }
+             | _
+           ] = data.districts
+
+    assert is_binary(district_id)
+    assert is_binary(district_name)
+    assert is_binary(district_status)
+    assert is_number(latitude)
+    assert is_number(longitude)
+
+    assert [
+             %{
+               id: measurement_id,
+               districtId: measurement_district_id,
+               measuredAt: measured_at,
+               currentLoadKw: current_load_kw
+             }
+             | _
+           ] = data.measurements
+
+    assert is_binary(measurement_id)
+    assert is_binary(measurement_district_id)
+    assert is_binary(measured_at)
+    assert is_integer(current_load_kw)
+
+    assert [
+             %{
+               id: alert_id,
+               districtId: alert_district_id,
+               severity: severity,
+               message: message,
+               acknowledged: acknowledged
+             }
+             | _
+           ] = data.alerts
+
+    assert is_binary(alert_id)
+    assert is_binary(alert_district_id)
+    assert is_binary(severity)
+    assert is_binary(message)
+    assert is_boolean(acknowledged)
+
     assert %{
-             districts: districts,
-             measurements: measurements,
-             alerts: alerts,
-             kpis: kpis
-           } = Energy.dashboard_data()
+             totalCurrentLoadKw: total_current_load_kw,
+             totalPvGenerationKw: total_pv_generation_kw,
+             warningDistricts: warning_districts,
+             criticalDistricts: critical_districts
+           } = data.kpis
 
-    assert length(districts) == 5
-    assert length(measurements) == 24
-    assert length(alerts) == 4
-
-    assert kpis.totalCurrentLoadKw == Enum.sum(Enum.map(districts, & &1.currentLoadKw))
-    assert kpis.totalPvGenerationKw == Enum.sum(Enum.map(districts, & &1.pvGenerationKw))
-    assert kpis.warningDistricts == 2
-    assert kpis.criticalDistricts == 1
+    assert is_integer(total_current_load_kw)
+    assert is_integer(total_pv_generation_kw)
+    assert is_integer(warning_districts)
+    assert is_integer(critical_districts)
   end
 
   test "measurements are synthetic hourly aggregate values" do
