@@ -36,3 +36,12 @@ export type EnergyAlert = {
   createdAt: string
   acknowledged: boolean
 }
+
+export type DashboardKpis = {
+  totalCurrentLoadKw: number
+  totalPvGenerationKw: number
+  totalActiveHeatPumps: number
+  totalActiveEvChargers: number
+  warningDistricts: number
+  criticalDistricts: number
+}

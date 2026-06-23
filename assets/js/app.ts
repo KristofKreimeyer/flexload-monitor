@@ -18,7 +18,7 @@ createInertiaApp({
       throw new Error(`Unknown Inertia page: ${name}`)
     }
 
-    return (await page()) as DefineComponent
+    return (await page()) as unknown as DefineComponent
   },
   setup({ el, App, props, plugin }) {
     createApp({ render: () => h(App, props) })

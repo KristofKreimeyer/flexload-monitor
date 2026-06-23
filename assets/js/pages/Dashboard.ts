@@ -1,5 +1,5 @@
 import { Head } from "@inertiajs/vue3"
-import { computed, defineComponent, h, ref, watch } from "vue"
+import { computed, defineComponent, h, ref, watch, type PropType } from "vue"
 import AlertPreviewList from "../components/AlertPreviewList"
 import DistrictDetailPanel from "../components/DistrictDetailPanel"
 import DistrictMap from "../components/DistrictMap"
@@ -8,24 +8,31 @@ import LoadTrendChart from "../components/LoadTrendChart"
 import StatusFilter, {
   type DistrictStatusFilter,
 } from "../components/StatusFilter"
-import {
-  deriveDashboardKpis,
-  mockDistricts,
-  mockEnergyAlerts,
-  mockEnergyMeasurements,
-} from "../domain/mockData"
+import type {
+  DashboardKpis,
+  District,
+  EnergyAlert,
+  EnergyMeasurement,
+} from "../domain/types"
 
-const dashboardKpis = deriveDashboardKpis(mockDistricts)
+type DashboardProps = {
+  districts: District[]
+  measurements: EnergyMeasurement[]
+  alerts: EnergyAlert[]
+  kpis: DashboardKpis
+}
 
 const formatMegawatts = (kilowatts: number) => (kilowatts / 1000).toFixed(1)
 
-const kpis: Array<{
+const buildKpiCards = (
+  dashboardKpis: DashboardKpis
+): Array<{
   title: string
   value: string
   unit: string
   status: KpiStatus
   description: string
-}> = [
+}> => [
   {
     title: "Current Load",
     value: formatMegawatts(dashboardKpis.totalCurrentLoadKw),
@@ -72,16 +79,35 @@ const kpis: Array<{
 
 export default defineComponent({
   name: "Dashboard",
-  setup() {
+  props: {
+    districts: {
+      type: Array as PropType<District[]>,
+      required: true,
+    },
+    measurements: {
+      type: Array as PropType<EnergyMeasurement[]>,
+      required: true,
+    },
+    alerts: {
+      type: Array as PropType<EnergyAlert[]>,
+      required: true,
+    },
+    kpis: {
+      type: Object as PropType<DashboardKpis>,
+      required: true,
+    },
+  },
+  setup(props: DashboardProps) {
     const statusFilter = ref<DistrictStatusFilter>("all")
     const selectedDistrictId = ref<string | null>(null)
+    const kpiCards = computed(() => buildKpiCards(props.kpis))
 
     const filteredDistricts = computed(() => {
       if (statusFilter.value === "all") {
-        return mockDistricts
+        return props.districts
       }
 
-      return mockDistricts.filter(
+      return props.districts.filter(
         (district) => district.status === statusFilter.value
       )
     })
@@ -135,7 +161,7 @@ export default defineComponent({
                 class:
                   "grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-3",
               },
-              kpis.map((kpi) => h(KpiCard, { key: kpi.title, ...kpi }))
+              kpiCards.value.map((kpi) => h(KpiCard, { key: kpi.title, ...kpi }))
             ),
             h("section", { class: "grid gap-6 lg:grid-cols-2" }, [
               h(
@@ -157,7 +183,7 @@ export default defineComponent({
                   ),
                   h("div", { class: "mt-5" }, [
                     h(LoadTrendChart, {
-                      measurements: mockEnergyMeasurements,
+                      measurements: props.measurements,
                     }),
                   ]),
                 ]
@@ -240,8 +266,8 @@ export default defineComponent({
                   ]
                 ),
                 h(AlertPreviewList, {
-                  alerts: mockEnergyAlerts,
-                  districts: mockDistricts,
+                  alerts: props.alerts,
+                  districts: props.districts,
                 }),
               ]
             ),

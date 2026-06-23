@@ -13,5 +13,8 @@ defmodule FlexloadMonitorWeb.PageControllerTest do
 
     assert html_response(conn, 200)
     assert inertia_component(conn) == "Dashboard"
+
+    assert %{districts: [_ | _], measurements: [_ | _], alerts: [_ | _], kpis: %{}} =
+             inertia_props(conn)
   end
 end
