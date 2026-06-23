@@ -1,9 +1,13 @@
 import { Head } from "@inertiajs/vue3"
-import { defineComponent, h } from "vue"
+import { computed, defineComponent, h, ref, watch } from "vue"
 import AlertPreviewList from "../components/AlertPreviewList"
+import DistrictDetailPanel from "../components/DistrictDetailPanel"
 import DistrictMap from "../components/DistrictMap"
 import KpiCard, { type KpiStatus } from "../components/KpiCard"
 import LoadTrendChart from "../components/LoadTrendChart"
+import StatusFilter, {
+  type DistrictStatusFilter,
+} from "../components/StatusFilter"
 import {
   deriveDashboardKpis,
   mockDistricts,
@@ -69,6 +73,35 @@ const kpis: Array<{
 export default defineComponent({
   name: "Dashboard",
   setup() {
+    const statusFilter = ref<DistrictStatusFilter>("all")
+    const selectedDistrictId = ref<string | null>(null)
+
+    const filteredDistricts = computed(() => {
+      if (statusFilter.value === "all") {
+        return mockDistricts
+      }
+
+      return mockDistricts.filter(
+        (district) => district.status === statusFilter.value
+      )
+    })
+
+    const selectedDistrict = computed(
+      () =>
+        filteredDistricts.value.find(
+          (district) => district.id === selectedDistrictId.value
+        ) ?? null
+    )
+
+    watch(filteredDistricts, (districts) => {
+      if (
+        selectedDistrictId.value &&
+        !districts.some((district) => district.id === selectedDistrictId.value)
+      ) {
+        selectedDistrictId.value = null
+      }
+    })
+
     return () =>
       h(
         "main",
@@ -147,12 +180,27 @@ export default defineComponent({
                     "Schematic view of synthetic district coordinates and operating status."
                   ),
                   h("div", { class: "mt-5" }, [
+                    h(StatusFilter, {
+                      modelValue: statusFilter.value,
+                      "onUpdate:modelValue": (value: DistrictStatusFilter) => {
+                        statusFilter.value = value
+                      },
+                    }),
+                  ]),
+                  h("div", { class: "mt-5" }, [
                     h(DistrictMap, {
-                      districts: mockDistricts,
+                      districts: filteredDistricts.value,
+                      selectedDistrictId: selectedDistrictId.value,
+                      onSelectDistrict: (districtId: string) => {
+                        selectedDistrictId.value = districtId
+                      },
                     }),
                   ]),
                 ]
               ),
+              h(DistrictDetailPanel, {
+                district: selectedDistrict.value,
+              }),
             ]),
             h(
               "section",

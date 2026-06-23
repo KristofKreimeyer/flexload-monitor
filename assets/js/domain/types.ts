@@ -1,4 +1,4 @@
-export type DistrictStatus = "normal" | "warning" | "critical"
+export type DistrictStatus = "normal" | "warning" | "critical" | "offline"
 
 export type AlertSeverity = "info" | "warning" | "critical"
 

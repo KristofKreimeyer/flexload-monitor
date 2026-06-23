@@ -45,6 +45,12 @@ const statusDetails: Record<DistrictStatus, StatusDetails> = {
     markerClass: "border-rose-200 bg-rose-400 text-slate-950",
     listClass: "bg-rose-400/10 text-rose-100 ring-rose-300/35",
   },
+  offline: {
+    label: "Offline",
+    shortLabel: "OF",
+    markerClass: "border-slate-300 bg-slate-500 text-white",
+    listClass: "bg-slate-500/15 text-slate-200 ring-slate-400/30",
+  },
 }
 
 const formatKilowatts = (kilowatts: number) =>
@@ -94,7 +100,7 @@ const appendMetric = (
   list.append(row)
 }
 
-const createPopupContent = (district: District) => {
+const createPopupContent = (district: District, onSelect: () => void) => {
   const container = document.createElement("article")
   container.className = "min-w-52 space-y-3"
 
@@ -111,7 +117,15 @@ const createPopupContent = (district: District) => {
   appendMetric(metrics, "Active heat pumps", String(district.activeHeatPumps))
   appendMetric(metrics, "Active EV chargers", String(district.activeEvChargers))
 
-  container.append(heading, metrics)
+  const button = document.createElement("button")
+  button.type = "button"
+  button.className =
+    "w-full rounded-md bg-slate-900 px-3 py-2 text-xs font-semibold text-white transition hover:bg-slate-700 focus:outline-none focus:ring-2 focus:ring-cyan-500"
+  button.textContent = `Inspect ${district.name}`
+  button.setAttribute("aria-label", `Inspect ${district.name} district details`)
+  button.addEventListener("click", onSelect)
+
+  container.append(heading, metrics, button)
 
   return container
 }
@@ -123,8 +137,15 @@ export default defineComponent({
       type: Array as PropType<District[]>,
       required: true,
     },
+    selectedDistrictId: {
+      type: String as PropType<District["id"] | null>,
+      default: null,
+    },
   },
-  setup(props) {
+  emits: {
+    selectDistrict: (_districtId: District["id"]) => true,
+  },
+  setup(props, { emit }) {
     const mapElement = ref<HTMLDivElement | null>(null)
     let leaflet: LeafletModule | null = null
     let map: LeafletMap | null = null
@@ -171,7 +192,8 @@ export default defineComponent({
             icon: createMarkerIcon(leaflet!, district),
             title: `${district.name}, status ${statusLabel(district.status)}`,
           })
-          .bindPopup(createPopupContent(district), {
+          .on("click", () => emit("selectDistrict", district.id))
+          .bindPopup(createPopupContent(district, () => emit("selectDistrict", district.id)), {
             closeButton: true,
             className: "district-map-popup",
           })
@@ -260,103 +282,139 @@ export default defineComponent({
             },
             "District status list"
           ),
-          h(
-            "ul",
-            { class: "grid gap-3", "aria-label": "District status details" },
-            props.districts.map((district) => {
-              const status = statusDetails[district.status]
-
-              return h(
-                "li",
+          props.districts.length === 0
+            ? h(
+                "p",
                 {
-                  key: district.id,
                   class:
-                    "rounded-lg border border-slate-700/80 bg-slate-900/55 p-4 transition duration-200 hover:border-slate-500 hover:bg-slate-900/80",
+                    "rounded-lg border border-slate-700/80 bg-slate-900/55 p-4 text-sm leading-6 text-slate-400",
+                  role: "status",
                 },
-                [
-                  h("article", { class: "space-y-3" }, [
-                    h(
-                      "header",
-                      {
-                        class:
-                          "flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between",
-                      },
-                      [
-                        h(
-                          "h4",
-                          {
-                            class:
-                              "text-sm font-semibold leading-6 text-white",
-                          },
-                          district.name
-                        ),
-                        h(
-                          "span",
-                          {
-                            class: [
-                              "inline-flex w-fit shrink-0 items-center gap-2 rounded-full px-2.5 py-1 text-xs font-semibold ring-1",
-                              status.listClass,
-                            ],
-                          },
-                          [
-                            h(
-                              "span",
-                              {
-                                class:
-                                  "grid h-5 min-w-5 place-items-center rounded-full bg-white/10 px-1 text-[0.625rem] leading-none",
-                                "aria-hidden": "true",
-                              },
-                              status.shortLabel
-                            ),
-                            h("span", null, `Status: ${status.label}`),
-                          ]
-                        ),
-                      ]
-                    ),
-                    h(
-                      "dl",
-                      {
-                        class:
-                          "grid gap-3 text-sm text-slate-300 sm:grid-cols-2",
-                      },
-                      [
-                        h("div", null, [
-                          h(
-                            "dt",
-                            {
-                              class:
-                                "text-xs font-medium uppercase tracking-[0.14em] text-slate-500",
-                            },
-                            "Current load"
-                          ),
-                          h(
-                            "dd",
-                            { class: "mt-1 font-medium text-slate-100" },
-                            `${formatKilowatts(district.currentLoadKw)} kW`
-                          ),
-                        ]),
-                        h("div", null, [
-                          h(
-                            "dt",
-                            {
-                              class:
-                                "text-xs font-medium uppercase tracking-[0.14em] text-slate-500",
-                            },
-                            "PV generation"
-                          ),
-                          h(
-                            "dd",
-                            { class: "mt-1 font-medium text-slate-100" },
-                            `${formatKilowatts(district.pvGenerationKw)} kW`
-                          ),
-                        ]),
-                      ]
-                    ),
-                  ]),
-                ]
+                "No fictional districts match the current status filter."
               )
-            })
-          ),
+            : h(
+                "ul",
+                {
+                  class: "grid gap-3",
+                  "aria-label": "District status details",
+                },
+                props.districts.map((district) => {
+                  const status = statusDetails[district.status]
+                  const selected = district.id === props.selectedDistrictId
+
+                  return h("li", { key: district.id }, [
+                    h(
+                      "button",
+                      {
+                        type: "button",
+                        class: [
+                          "w-full rounded-lg border p-4 text-left transition duration-200 focus:outline-none focus:ring-2 focus:ring-cyan-300 focus:ring-offset-2 focus:ring-offset-slate-950",
+                          selected
+                            ? "border-cyan-300 bg-cyan-300/10 shadow-lg shadow-cyan-950/25"
+                            : "border-slate-700/80 bg-slate-900/55 hover:border-slate-500 hover:bg-slate-900/80",
+                        ],
+                        "aria-label": `Select ${district.name}. Status ${status.label}. Current load ${formatKilowatts(district.currentLoadKw)} kW.`,
+                        "aria-pressed": selected ? "true" : "false",
+                        "aria-current": selected ? "true" : undefined,
+                        onClick: () => emit("selectDistrict", district.id),
+                      },
+                      [
+                        h("article", { class: "space-y-3" }, [
+                          h(
+                            "header",
+                            {
+                              class:
+                                "flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between",
+                            },
+                            [
+                              h("div", null, [
+                                h(
+                                  "h4",
+                                  {
+                                    class:
+                                      "text-sm font-semibold leading-6 text-white",
+                                  },
+                                  district.name
+                                ),
+                                selected
+                                  ? h(
+                                      "p",
+                                      {
+                                        class:
+                                          "mt-1 text-xs font-semibold uppercase tracking-[0.14em] text-cyan-200",
+                                      },
+                                      "Selected"
+                                    )
+                                  : null,
+                              ]),
+                              h(
+                                "span",
+                                {
+                                  class: [
+                                    "inline-flex w-fit shrink-0 items-center gap-2 rounded-full px-2.5 py-1 text-xs font-semibold ring-1",
+                                    status.listClass,
+                                  ],
+                                },
+                                [
+                                  h(
+                                    "span",
+                                    {
+                                      class:
+                                        "grid h-5 min-w-5 place-items-center rounded-full bg-white/10 px-1 text-[0.625rem] leading-none",
+                                      "aria-hidden": "true",
+                                    },
+                                    status.shortLabel
+                                  ),
+                                  h("span", null, `Status: ${status.label}`),
+                                ]
+                              ),
+                            ]
+                          ),
+                          h(
+                            "dl",
+                            {
+                              class:
+                                "grid gap-3 text-sm text-slate-300 sm:grid-cols-2",
+                            },
+                            [
+                              h("div", null, [
+                                h(
+                                  "dt",
+                                  {
+                                    class:
+                                      "text-xs font-medium uppercase tracking-[0.14em] text-slate-500",
+                                  },
+                                  "Current load"
+                                ),
+                                h(
+                                  "dd",
+                                  { class: "mt-1 font-medium text-slate-100" },
+                                  `${formatKilowatts(district.currentLoadKw)} kW`
+                                ),
+                              ]),
+                              h("div", null, [
+                                h(
+                                  "dt",
+                                  {
+                                    class:
+                                      "text-xs font-medium uppercase tracking-[0.14em] text-slate-500",
+                                  },
+                                  "PV generation"
+                                ),
+                                h(
+                                  "dd",
+                                  { class: "mt-1 font-medium text-slate-100" },
+                                  `${formatKilowatts(district.pvGenerationKw)} kW`
+                                ),
+                              ]),
+                            ]
+                          ),
+                        ]),
+                      ]
+                    ),
+                  ])
+                })
+              ),
         ]),
       ])
   },
