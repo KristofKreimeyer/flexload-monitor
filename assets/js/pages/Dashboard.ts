@@ -15,7 +15,7 @@ import type {
   EnergyMeasurement,
 } from "../domain/types"
 
-type DashboardProps = {
+export type DashboardProps = {
   districts: District[]
   measurements: EnergyMeasurement[]
   alerts: EnergyAlert[]
