@@ -2,10 +2,12 @@ import { Head } from "@inertiajs/vue3"
 import { defineComponent, h } from "vue"
 import AlertPreviewList from "../components/AlertPreviewList"
 import KpiCard, { type KpiStatus } from "../components/KpiCard"
+import LoadTrendChart from "../components/LoadTrendChart"
 import {
   deriveDashboardKpis,
   mockDistricts,
   mockEnergyAlerts,
+  mockEnergyMeasurements,
 } from "../domain/mockData"
 
 const dashboardKpis = deriveDashboardKpis(mockDistricts)
@@ -120,13 +122,13 @@ export default defineComponent({
                   h(
                     "p",
                     { class: "mt-2 text-sm leading-6 text-slate-400" },
-                    "Synthetic demand history will appear here."
+                    "Synthetic aggregate demand and PV output over the last 24 hours."
                   ),
-                  h(
-                    "div",
-                    { class: ["mt-5", placeholderClass], role: "status" },
-                    "Load trend visualization will be implemented in a later step."
-                  ),
+                  h("div", { class: "mt-5" }, [
+                    h(LoadTrendChart, {
+                      measurements: mockEnergyMeasurements,
+                    }),
+                  ]),
                 ]
               ),
               h(

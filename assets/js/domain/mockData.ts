@@ -1,4 +1,4 @@
-import type { District, EnergyAlert } from "./types"
+import type { District, EnergyAlert, EnergyMeasurement } from "./types"
 
 export type DashboardKpis = {
   totalCurrentLoadKw: number
@@ -96,6 +96,42 @@ export const mockEnergyAlerts: EnergyAlert[] = [
     acknowledged: true,
   },
 ]
+
+const loadProfileMultipliers = [
+  0.72, 0.68, 0.65, 0.64, 0.67, 0.78, 0.94, 1.08, 1.12, 1.05, 0.98, 0.94,
+  0.96, 1.02, 1.08, 1.14, 1.22, 1.3, 1.24, 1.16, 1.04, 0.92, 0.84, 0.78,
+]
+
+const pvProfileMultipliers = [
+  0, 0, 0, 0, 0.02, 0.08, 0.22, 0.42, 0.62, 0.78, 0.9, 0.98, 1, 0.94,
+  0.82, 0.66, 0.46, 0.24, 0.08, 0.02, 0, 0, 0, 0,
+]
+
+const baseMeasurementTime = new Date("2026-06-23T00:00:00.000Z")
+const totalCurrentLoadKw = mockDistricts.reduce(
+  (total, district) => total + district.currentLoadKw,
+  0
+)
+const totalPvGenerationKw = mockDistricts.reduce(
+  (total, district) => total + district.pvGenerationKw,
+  0
+)
+
+export const mockEnergyMeasurements: EnergyMeasurement[] =
+  loadProfileMultipliers.map((loadMultiplier, hour) => {
+    const measuredAt = new Date(baseMeasurementTime)
+    measuredAt.setUTCHours(hour)
+
+    return {
+      id: `measurement-2026-06-23-${String(hour).padStart(2, "0")}`,
+      districtId: "district-all",
+      measuredAt: measuredAt.toISOString(),
+      currentLoadKw: Math.round(totalCurrentLoadKw * loadMultiplier),
+      pvGenerationKw: Math.round(totalPvGenerationKw * pvProfileMultipliers[hour]),
+      activeHeatPumps: Math.round(372 * loadMultiplier),
+      activeEvChargers: Math.round(136 * Math.max(0.45, loadMultiplier - 0.12)),
+    }
+  })
 
 export function deriveDashboardKpis(districts: District[]): DashboardKpis {
   return districts.reduce<DashboardKpis>(
