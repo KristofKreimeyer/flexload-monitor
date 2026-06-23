@@ -1,4 +1,4 @@
-import type { District } from "./types"
+import type { District, EnergyAlert } from "./types"
 
 export type DashboardKpis = {
   totalCurrentLoadKw: number
@@ -59,6 +59,41 @@ export const mockDistricts: District[] = [
     pvGenerationKw: 1365,
     activeHeatPumps: 72,
     activeEvChargers: 29,
+  },
+]
+
+export const mockEnergyAlerts: EnergyAlert[] = [
+  {
+    id: "alert-maple-forge-ev-surge",
+    districtId: "district-maple-forge",
+    severity: "critical",
+    message: "EV charging load exceeded the synthetic feeder threshold.",
+    createdAt: "2026-06-23T08:35:00.000Z",
+    acknowledged: false,
+  },
+  {
+    id: "alert-silverquay-pv-drop",
+    districtId: "district-silverquay",
+    severity: "warning",
+    message: "PV generation is below the expected synthetic morning profile.",
+    createdAt: "2026-06-23T08:18:00.000Z",
+    acknowledged: false,
+  },
+  {
+    id: "alert-copperfield-heat-pumps",
+    districtId: "district-copperfield-heights",
+    severity: "warning",
+    message: "Heat pump activity is elevated during a simulated load peak.",
+    createdAt: "2026-06-23T07:54:00.000Z",
+    acknowledged: true,
+  },
+  {
+    id: "alert-northbank-telemetry",
+    districtId: "district-northbank-rise",
+    severity: "info",
+    message: "Synthetic telemetry returned to nominal reporting cadence.",
+    createdAt: "2026-06-23T07:21:00.000Z",
+    acknowledged: true,
   },
 ]
 

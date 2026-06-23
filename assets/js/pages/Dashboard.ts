@@ -1,7 +1,12 @@
 import { Head } from "@inertiajs/vue3"
 import { defineComponent, h } from "vue"
+import AlertPreviewList from "../components/AlertPreviewList"
 import KpiCard, { type KpiStatus } from "../components/KpiCard"
-import { deriveDashboardKpis, mockDistricts } from "../domain/mockData"
+import {
+  deriveDashboardKpis,
+  mockDistricts,
+  mockEnergyAlerts,
+} from "../domain/mockData"
 
 const dashboardKpis = deriveDashboardKpis(mockDistricts)
 
@@ -61,6 +66,9 @@ const kpis: Array<{
 export default defineComponent({
   name: "Dashboard",
   setup() {
+    const placeholderClass =
+      "flex min-h-64 items-center justify-center rounded-lg border border-dashed border-slate-600 bg-slate-900/45 p-6 text-center text-sm leading-6 text-slate-300"
+
     return () =>
       h(
         "main",
@@ -71,15 +79,7 @@ export default defineComponent({
         [
           h(Head, { title: "FlexLoad Monitor" }),
           h("section", { class: "mx-auto flex max-w-6xl flex-col gap-10" }, [
-            h("div", { class: "space-y-4" }, [
-              h(
-                "p",
-                {
-                  class:
-                    "text-sm font-medium uppercase tracking-[0.2em] text-emerald-300",
-                },
-                "Synthetic overview"
-              ),
+            h("header", { class: "space-y-4" }, [
               h(
                 "h1",
                 {
@@ -93,7 +93,7 @@ export default defineComponent({
                 {
                   class: "max-w-2xl text-lg leading-8 text-slate-300",
                 },
-                "Synthetic energy load monitoring dashboard"
+                "Synthetic energy load monitoring for fictional city districts"
               ),
             ]),
             h(
@@ -103,6 +103,99 @@ export default defineComponent({
                   "grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-3",
               },
               kpis.map((kpi) => h(KpiCard, { key: kpi.title, ...kpi }))
+            ),
+            h("section", { class: "grid gap-6 lg:grid-cols-2" }, [
+              h(
+                "article",
+                {
+                  class:
+                    "rounded-lg border border-slate-700/80 bg-white/[0.04] p-5 shadow-xl shadow-slate-950/20",
+                },
+                [
+                  h(
+                    "h2",
+                    { class: "text-lg font-semibold leading-7 text-white" },
+                    "Load trend"
+                  ),
+                  h(
+                    "p",
+                    { class: "mt-2 text-sm leading-6 text-slate-400" },
+                    "Synthetic demand history will appear here."
+                  ),
+                  h(
+                    "div",
+                    { class: ["mt-5", placeholderClass], role: "status" },
+                    "Load trend visualization will be implemented in a later step."
+                  ),
+                ]
+              ),
+              h(
+                "article",
+                {
+                  class:
+                    "rounded-lg border border-slate-700/80 bg-white/[0.04] p-5 shadow-xl shadow-slate-950/20",
+                },
+                [
+                  h(
+                    "h2",
+                    { class: "text-lg font-semibold leading-7 text-white" },
+                    "District map"
+                  ),
+                  h(
+                    "p",
+                    { class: "mt-2 text-sm leading-6 text-slate-400" },
+                    "Fictional district geography will appear here."
+                  ),
+                  h(
+                    "div",
+                    { class: ["mt-5", placeholderClass], role: "status" },
+                    "District map visualization will be implemented in a later step."
+                  ),
+                ]
+              ),
+            ]),
+            h(
+              "section",
+              {
+                class:
+                  "rounded-lg border border-slate-700/80 bg-white/[0.04] p-5 shadow-xl shadow-slate-950/20",
+                "aria-labelledby": "recent-alerts-heading",
+              },
+              [
+                h(
+                  "div",
+                  {
+                    class:
+                      "mb-5 flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between",
+                  },
+                  [
+                    h("div", null, [
+                      h(
+                        "h2",
+                        {
+                          id: "recent-alerts-heading",
+                          class: "text-lg font-semibold leading-7 text-white",
+                        },
+                        "Recent alerts"
+                      ),
+                      h(
+                        "p",
+                        { class: "mt-2 text-sm leading-6 text-slate-400" },
+                        "Latest synthetic operating alerts for fictional districts."
+                      ),
+                    ]),
+                    h(
+                      "p",
+                      { class: "text-sm font-medium text-slate-300" },
+                      "Showing latest 3"
+                    ),
+                  ]
+                ),
+                h(AlertPreviewList, {
+                  alerts: mockEnergyAlerts,
+                  districts: mockDistricts,
+                }),
+              ]
             ),
           ]),
         ]
