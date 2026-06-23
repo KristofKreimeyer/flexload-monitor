@@ -1,6 +1,11 @@
 import { Head } from "@inertiajs/vue3"
 import { defineComponent, h } from "vue"
 import KpiCard, { type KpiStatus } from "../components/KpiCard"
+import { deriveDashboardKpis, mockDistricts } from "../domain/mockData"
+
+const dashboardKpis = deriveDashboardKpis(mockDistricts)
+
+const formatMegawatts = (kilowatts: number) => (kilowatts / 1000).toFixed(1)
 
 const kpis: Array<{
   title: string
@@ -11,31 +16,45 @@ const kpis: Array<{
 }> = [
   {
     title: "Current Load",
-    value: "14.8",
+    value: formatMegawatts(dashboardKpis.totalCurrentLoadKw),
     unit: "MW",
     status: "warning",
     description: "Synthetic aggregate demand across monitored feeders.",
   },
   {
     title: "PV Generation",
-    value: "9.6",
+    value: formatMegawatts(dashboardKpis.totalPvGenerationKw),
     unit: "MW",
     status: "normal",
     description: "Estimated photovoltaic output available to the local grid.",
   },
   {
     title: "Active Heat Pumps",
-    value: "312",
+    value: String(dashboardKpis.totalActiveHeatPumps),
     unit: "units",
     status: "normal",
     description: "Synthetic count of controllable heat pumps currently running.",
   },
   {
     title: "Active EV Chargers",
-    value: "87",
+    value: String(dashboardKpis.totalActiveEvChargers),
     unit: "ports",
     status: "critical",
     description: "Synthetic count of EV charging ports drawing power right now.",
+  },
+  {
+    title: "Warning Districts",
+    value: String(dashboardKpis.warningDistricts),
+    unit: "areas",
+    status: "warning",
+    description: "Synthetic districts currently outside nominal operating range.",
+  },
+  {
+    title: "Critical Districts",
+    value: String(dashboardKpis.criticalDistricts),
+    unit: "areas",
+    status: "critical",
+    description: "Synthetic districts requiring immediate operator attention.",
   },
 ]
 
@@ -81,7 +100,7 @@ export default defineComponent({
               "div",
               {
                 class:
-                  "grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4",
+                  "grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-3",
               },
               kpis.map((kpi) => h(KpiCard, { key: kpi.title, ...kpi }))
             ),
