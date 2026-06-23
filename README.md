@@ -63,6 +63,13 @@ When the backend prop shape changes, update the matching TypeScript domain
 types and page props in the same change so the Phoenix/Inertia boundary stays
 aligned with the Vue application.
 
+Frontend files matching `assets/js/types/*.typecheck.ts` are compile-time
+contract fixtures. They are included in `npm run typecheck` to verify that
+synthetic Phoenix-provided Inertia props still satisfy the TypeScript types
+consumed by Vue. These fixtures should not contain runtime application
+behavior. Future changes to Phoenix-provided props should update the matching
+TypeScript types and typecheck fixtures together.
+
 Ready to run in production? Please [check our deployment guides](https://phoenix.hexdocs.pm/deployment.html).
 
 ## Learn more
