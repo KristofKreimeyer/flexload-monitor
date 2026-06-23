@@ -1,5 +1,43 @@
 import { Head } from "@inertiajs/vue3"
 import { defineComponent, h } from "vue"
+import KpiCard, { type KpiStatus } from "../components/KpiCard"
+
+const kpis: Array<{
+  title: string
+  value: string
+  unit: string
+  status: KpiStatus
+  description: string
+}> = [
+  {
+    title: "Current Load",
+    value: "14.8",
+    unit: "MW",
+    status: "warning",
+    description: "Synthetic aggregate demand across monitored feeders.",
+  },
+  {
+    title: "PV Generation",
+    value: "9.6",
+    unit: "MW",
+    status: "normal",
+    description: "Estimated photovoltaic output available to the local grid.",
+  },
+  {
+    title: "Active Heat Pumps",
+    value: "312",
+    unit: "units",
+    status: "normal",
+    description: "Synthetic count of controllable heat pumps currently running.",
+  },
+  {
+    title: "Active EV Chargers",
+    value: "87",
+    unit: "ports",
+    status: "critical",
+    description: "Synthetic count of EV charging ports drawing power right now.",
+  },
+]
 
 export default defineComponent({
   name: "Dashboard",
@@ -13,7 +51,7 @@ export default defineComponent({
         },
         [
           h(Head, { title: "FlexLoad Monitor" }),
-          h("section", { class: "mx-auto flex max-w-5xl flex-col gap-10" }, [
+          h("section", { class: "mx-auto flex max-w-6xl flex-col gap-10" }, [
             h("div", { class: "space-y-4" }, [
               h(
                 "p",
@@ -43,15 +81,9 @@ export default defineComponent({
               "div",
               {
                 class:
-                  "max-w-xl rounded-lg border border-white/10 bg-white/[0.06] p-6 shadow-2xl shadow-emerald-950/30 transition duration-200 hover:border-emerald-300/40 hover:bg-white/[0.08]",
+                  "grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4",
               },
-              [
-                h(
-                  "p",
-                  { class: "text-base font-medium text-white" },
-                  "Dashboard setup successful"
-                ),
-              ]
+              kpis.map((kpi) => h(KpiCard, { key: kpi.title, ...kpi }))
             ),
           ]),
         ]
