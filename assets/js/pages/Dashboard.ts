@@ -1,4 +1,5 @@
 import { Head } from "@inertiajs/vue3"
+import axios from "axios"
 import { computed, defineComponent, h, ref, watch, type PropType } from "vue"
 import AlertPreviewList from "../components/AlertPreviewList"
 import DistrictDetailPanel from "../components/DistrictDetailPanel"
@@ -23,6 +24,15 @@ export type DashboardProps = {
 }
 
 const formatMegawatts = (kilowatts: number) => (kilowatts / 1000).toFixed(1)
+
+const dashboardDataEndpoint = "/dashboard/data"
+
+const copyDashboardProps = (props: DashboardProps): DashboardProps => ({
+  districts: [...props.districts],
+  measurements: [...props.measurements],
+  alerts: [...props.alerts],
+  kpis: { ...props.kpis },
+})
 
 const buildKpiCards = (
   dashboardKpis: DashboardKpis
@@ -98,16 +108,20 @@ export default defineComponent({
     },
   },
   setup(props: DashboardProps) {
+    const dashboardData = ref<DashboardProps>(copyDashboardProps(props))
     const statusFilter = ref<DistrictStatusFilter>("all")
     const selectedDistrictId = ref<string | null>(null)
-    const kpiCards = computed(() => buildKpiCards(props.kpis))
+    const isRefreshing = ref(false)
+    const refreshError = ref<string | null>(null)
+    const lastUpdatedAt = ref(new Date())
+    const kpiCards = computed(() => buildKpiCards(dashboardData.value.kpis))
 
     const filteredDistricts = computed(() => {
       if (statusFilter.value === "all") {
-        return props.districts
+        return dashboardData.value.districts
       }
 
-      return props.districts.filter(
+      return dashboardData.value.districts.filter(
         (district) => district.status === statusFilter.value
       )
     })
@@ -128,6 +142,40 @@ export default defineComponent({
       }
     })
 
+    watch(
+      () => props,
+      (latestProps) => {
+        dashboardData.value = copyDashboardProps(latestProps)
+        lastUpdatedAt.value = new Date()
+      },
+      { deep: true }
+    )
+
+    const refreshDashboardData = async () => {
+      if (isRefreshing.value) {
+        return
+      }
+
+      isRefreshing.value = true
+      refreshError.value = null
+
+      try {
+        const response = await axios.get<DashboardProps>(dashboardDataEndpoint, {
+          headers: {
+            Accept: "application/json",
+          },
+        })
+
+        dashboardData.value = copyDashboardProps(response.data)
+        lastUpdatedAt.value = new Date()
+      } catch {
+        refreshError.value =
+          "Dashboard data could not be refreshed. The last successful snapshot is still shown."
+      } finally {
+        isRefreshing.value = false
+      }
+    }
+
     return () =>
       h(
         "main",
@@ -138,28 +186,84 @@ export default defineComponent({
         [
           h(Head, { title: "FlexLoad Monitor" }),
           h("section", { class: "mx-auto flex max-w-6xl flex-col gap-10" }, [
-            h("header", { class: "space-y-4" }, [
-              h(
-                "h1",
-                {
-                  class:
-                    "text-4xl font-semibold tracking-normal text-white sm:text-5xl",
-                },
-                "FlexLoad Monitor"
-              ),
-              h(
-                "p",
-                {
-                  class: "max-w-2xl text-lg leading-8 text-slate-300",
-                },
-                "Synthetic energy load monitoring for fictional city districts"
-              ),
+            h("header", { class: "flex flex-col gap-5 lg:flex-row lg:items-end lg:justify-between" }, [
+              h("div", { class: "space-y-4" }, [
+                h(
+                  "h1",
+                  {
+                    class:
+                      "text-4xl font-semibold tracking-normal text-white sm:text-5xl",
+                  },
+                  "FlexLoad Monitor"
+                ),
+                h(
+                  "p",
+                  {
+                    class: "max-w-2xl text-lg leading-8 text-slate-300",
+                  },
+                  "Synthetic energy load monitoring for fictional city districts"
+                ),
+              ]),
+              h("div", { class: "flex flex-col gap-3 sm:flex-row sm:items-center" }, [
+                h(
+                  "p",
+                  {
+                    class:
+                      "text-sm font-medium leading-6 text-slate-400 sm:text-right",
+                    role: "status",
+                    "aria-live": "polite",
+                  },
+                  isRefreshing.value
+                    ? "Refreshing data"
+                    : `Updated ${lastUpdatedAt.value.toLocaleTimeString([], {
+                        hour: "2-digit",
+                        minute: "2-digit",
+                      })}`
+                ),
+                h(
+                  "button",
+                  {
+                    id: "dashboard-refresh-button",
+                    type: "button",
+                    class: [
+                      "inline-flex min-h-11 items-center justify-center rounded-lg border px-4 py-2 text-sm font-semibold transition duration-200 focus:outline-none focus:ring-2 focus:ring-sky-300 focus:ring-offset-2 focus:ring-offset-slate-950",
+                      isRefreshing.value
+                        ? "cursor-wait border-slate-600 bg-slate-800 text-slate-300"
+                        : "border-sky-300/50 bg-sky-400/10 text-sky-100 hover:-translate-y-0.5 hover:border-sky-200 hover:bg-sky-400/20",
+                    ],
+                    disabled: isRefreshing.value,
+                    "aria-busy": isRefreshing.value ? "true" : "false",
+                    onClick: refreshDashboardData,
+                  },
+                  isRefreshing.value ? "Refreshing..." : "Refresh data"
+                ),
+              ]),
             ]),
+            refreshError.value
+              ? h(
+                  "aside",
+                  {
+                    class:
+                      "rounded-lg border border-amber-300/40 bg-amber-400/10 p-4 text-sm leading-6 text-amber-100 shadow-xl shadow-slate-950/20",
+                    role: "alert",
+                  },
+                  [
+                    h(
+                      "p",
+                      { class: "font-semibold text-amber-50" },
+                      "Data refresh failed"
+                    ),
+                    h("p", { class: "mt-1 text-amber-100/90" }, refreshError.value),
+                  ]
+                )
+              : null,
             h(
               "div",
               {
-                class:
-                  "grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-3",
+                class: [
+                  "grid grid-cols-1 gap-4 transition duration-200 sm:grid-cols-2 xl:grid-cols-3",
+                  isRefreshing.value && "opacity-75",
+                ],
               },
               kpiCards.value.map((kpi) => h(KpiCard, { key: kpi.title, ...kpi }))
             ),
@@ -183,7 +287,7 @@ export default defineComponent({
                   ),
                   h("div", { class: "mt-5" }, [
                     h(LoadTrendChart, {
-                      measurements: props.measurements,
+                      measurements: dashboardData.value.measurements,
                     }),
                   ]),
                 ]
@@ -266,8 +370,8 @@ export default defineComponent({
                   ]
                 ),
                 h(AlertPreviewList, {
-                  alerts: props.alerts,
-                  districts: props.districts,
+                  alerts: dashboardData.value.alerts,
+                  districts: dashboardData.value.districts,
                 }),
               ]
             ),
