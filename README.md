@@ -190,6 +190,20 @@ mix test
 mix precommit
 ```
 
+## Deploying on Render
+
+The repository includes a Render Blueprint for a single web service. The demo
+uses synthetic in-memory data, so production does not require PostgreSQL.
+
+1. Push this repository to GitHub, GitLab, or Bitbucket.
+2. In Render, choose **New > Blueprint** and connect the repository.
+3. Accept the settings from `render.yaml` and create the service.
+
+Render generates `SECRET_KEY_BASE`, builds an OTP release, and uses `/health`
+for readiness checks. Set `PHX_HOST` only if you later attach a custom domain.
+If persistent data is added later, provision PostgreSQL and set `DATABASE_URL`;
+the application will then start its Ecto repository automatically.
+
 ## Project Status
 
 FlexLoad Monitor is a work-in-progress portfolio project. It currently uses

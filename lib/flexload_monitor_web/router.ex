@@ -18,6 +18,7 @@ defmodule FlexloadMonitorWeb.Router do
   scope "/", FlexloadMonitorWeb do
     pipe_through :api
 
+    get "/health", PageController, :health
     get "/dashboard/data", PageController, :dashboard_data
   end
 

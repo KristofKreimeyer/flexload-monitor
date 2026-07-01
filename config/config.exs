@@ -9,7 +9,8 @@ import Config
 
 config :flexload_monitor,
   ecto_repos: [FlexloadMonitor.Repo],
-  generators: [timestamp_type: :utc_datetime]
+  generators: [timestamp_type: :utc_datetime],
+  start_repo: true
 
 config :inertia,
   endpoint: FlexloadMonitorWeb.Endpoint,

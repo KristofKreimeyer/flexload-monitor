@@ -37,4 +37,10 @@ defmodule FlexloadMonitorWeb.PageControllerTest do
     assert is_integer(total_current_load_kw)
     assert is_integer(total_pv_generation_kw)
   end
+
+  test "GET /health", %{conn: conn} do
+    conn = get(conn, ~p"/health")
+
+    assert %{"status" => "ok"} = json_response(conn, 200)
+  end
 end

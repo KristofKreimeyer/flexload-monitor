@@ -1,0 +1,15 @@
+services:
+  - type: web
+    name: flexload-monitor
+    runtime: elixir
+    plan: free
+    buildCommand: ./build.sh
+    startCommand: _build/prod/rel/flexload_monitor/bin/flexload_monitor start
+    healthCheckPath: /health
+    envVars:
+      - key: MIX_ENV
+        value: prod
+      - key: PHX_SERVER
+        value: "true"
+      - key: SECRET_KEY_BASE
+        generateValue: true

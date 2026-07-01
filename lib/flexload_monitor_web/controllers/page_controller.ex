@@ -17,4 +17,9 @@ defmodule FlexloadMonitorWeb.PageController do
   def dashboard_data(conn, _params) do
     json(conn, Energy.dashboard_data())
   end
+
+  # Used by hosting platforms to verify that the HTTP service is ready.
+  def health(conn, _params) do
+    json(conn, %{status: "ok"})
+  end
 end
