@@ -1,0 +1,4 @@
+#!/bin/sh
+
+export PHX_SERVER=true
+exec "$(dirname "$0")/flexload_monitor" start
