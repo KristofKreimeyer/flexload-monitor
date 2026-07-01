@@ -15,6 +15,7 @@ defmodule FlexloadMonitorWeb.ErrorJSON do
   # By default, Phoenix returns the status message from
   # the template name. For example, "404.json" becomes
   # "Not Found".
+  # Converts a JSON error template name into Phoenix's default error payload.
   def render(template, _assigns) do
     %{errors: %{detail: Phoenix.Controller.status_message_from_template(template)}}
   end

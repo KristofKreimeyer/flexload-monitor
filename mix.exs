@@ -1,6 +1,7 @@
 defmodule FlexloadMonitor.MixProject do
   use Mix.Project
 
+  # Describes how Mix should compile, package, and identify this application.
   def project do
     [
       app: :flexload_monitor,
@@ -18,6 +19,7 @@ defmodule FlexloadMonitor.MixProject do
   # Configuration for the OTP application.
   #
   # Type `mix help compile.app` for more information.
+  # Points OTP at the application module and lists runtime applications to start.
   def application do
     [
       mod: {FlexloadMonitor.Application, []},
@@ -25,6 +27,7 @@ defmodule FlexloadMonitor.MixProject do
     ]
   end
 
+  # Tells Mix to run the precommit alias in the test environment.
   def cli do
     [
       preferred_envs: [precommit: :test]
@@ -32,12 +35,15 @@ defmodule FlexloadMonitor.MixProject do
   end
 
   # Specifies which paths to compile per environment.
+  # Includes test support modules only while running tests.
   defp elixirc_paths(:test), do: ["lib", "test/support"]
+  # Compiles only application code outside of the test environment.
   defp elixirc_paths(_), do: ["lib"]
 
   # Specifies your project dependencies.
   #
   # Type `mix help deps` for examples and options.
+  # Lists Phoenix, database, Inertia, asset, telemetry, and server dependencies.
   defp deps do
     [
       {:phoenix, "~> 1.8.8"},
@@ -73,6 +79,7 @@ defmodule FlexloadMonitor.MixProject do
   #     $ mix setup
   #
   # See the documentation for `Mix` for more info on aliases.
+  # Provides common setup, asset, database, test, deploy, and precommit task shortcuts.
   defp aliases do
     [
       setup: ["deps.get", "ecto.setup", "assets.setup", "assets.build"],

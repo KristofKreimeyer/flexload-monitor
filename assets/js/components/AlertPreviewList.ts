@@ -26,6 +26,7 @@ const severityStyles: Record<
   },
 }
 
+// Converts an alert acknowledgement flag into the displayed status label.
 const alertStatusLabel = (alert: EnergyAlert) =>
   alert.acknowledged ? "Acknowledged" : "Open"
 
@@ -46,11 +47,13 @@ export default defineComponent({
     },
   },
   setup(props) {
+    // Builds a district ID lookup so alert rows can show friendly district names.
     const districtNames = computed(
       () =>
         new Map(props.districts.map((district) => [district.id, district.name]))
     )
 
+    // Sorts newest first and applies the preview limit.
     const latestAlerts = computed(() =>
       [...props.alerts]
         .sort(

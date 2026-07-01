@@ -47,8 +47,10 @@ type TrendPoint = {
   pvGenerationMw: number
 }
 
+// Converts backend kilowatt values into megawatts for chart labels and series data.
 const formatMegawatts = (kilowatts: number) => (kilowatts / 1000).toFixed(1)
 
+// Formats UTC measurement timestamps into compact hour labels.
 const formatHour = (value: string) =>
   new Intl.DateTimeFormat("en", {
     hour: "2-digit",
@@ -57,6 +59,7 @@ const formatHour = (value: string) =>
     timeZone: "UTC",
   }).format(new Date(value))
 
+// Finds the measurement with the highest value for the requested measurement key.
 const maxBy = (
   measurements: EnergyMeasurement[],
   key: "currentLoadKw" | "pvGenerationKw"
@@ -82,6 +85,7 @@ export default defineComponent({
     let chart: EChartsType | null = null
     let resizeObserver: ResizeObserver | null = null
 
+    // Keeps chart input chronological even if the backend payload order changes later.
     const sortedMeasurements = computed(() =>
       [...props.measurements].sort(
         (first, second) =>
@@ -89,6 +93,7 @@ export default defineComponent({
       )
     )
 
+    // Converts backend measurements into the chart's display units.
     const trendPoints = computed<TrendPoint[]>(() =>
       sortedMeasurements.value.map((measurement) => ({
         label: formatHour(measurement.measuredAt),
@@ -97,20 +102,24 @@ export default defineComponent({
       }))
     )
 
+    // Tracks the newest measurement for the chart summary and statistics.
     const latestMeasurement = computed(() =>
       sortedMeasurements.value.length > 0
         ? sortedMeasurements.value[sortedMeasurements.value.length - 1]
         : null
     )
 
+    // Finds the highest synthetic load point in the current series.
     const peakLoad = computed(() =>
       maxBy(sortedMeasurements.value, "currentLoadKw")
     )
 
+    // Finds the highest synthetic PV generation point in the current series.
     const peakPv = computed(() =>
       maxBy(sortedMeasurements.value, "pvGenerationKw")
     )
 
+    // Produces an accessible text summary of the visual chart.
     const summary = computed(() => {
       if (!latestMeasurement.value || !peakLoad.value || !peakPv.value) {
         return "No synthetic 24-hour load trend data is available."
@@ -131,6 +140,7 @@ export default defineComponent({
       ].join(" ")
     })
 
+    // Creates or updates the ECharts instance from the latest computed trend points.
     const renderChart = () => {
       if (!chartElement.value) {
         return

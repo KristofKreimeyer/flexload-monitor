@@ -145,6 +145,9 @@ defmodule FlexloadMonitor.Energy do
     0
   ]
 
+  @doc """
+  Builds the complete payload consumed by the Inertia dashboard and JSON endpoint.
+  """
   def dashboard_data do
     %{
       districts: districts(),
@@ -154,10 +157,19 @@ defmodule FlexloadMonitor.Energy do
     }
   end
 
+  @doc """
+  Returns the fixed fictional district snapshots shown on the map and KPI cards.
+  """
   def districts, do: @districts
 
+  @doc """
+  Returns the fixed fictional alert stream shown in the alert preview list.
+  """
   def alerts, do: @alerts
 
+  @doc """
+  Generates a 24-hour synthetic load and PV profile from the fixed district totals.
+  """
   def measurements do
     total_current_load_kw = sum_district_field(:currentLoadKw)
     total_pv_generation_kw = sum_district_field(:pvGenerationKw)
@@ -180,6 +192,9 @@ defmodule FlexloadMonitor.Energy do
     end)
   end
 
+  @doc """
+  Aggregates district snapshots into the totals displayed as dashboard KPIs.
+  """
   def kpis do
     Enum.reduce(
       @districts,
@@ -206,6 +221,7 @@ defmodule FlexloadMonitor.Energy do
     )
   end
 
+  # Adds the same numeric field across all synthetic district snapshots.
   defp sum_district_field(field) do
     Enum.reduce(@districts, 0, fn district, total -> total + Map.fetch!(district, field) end)
   end

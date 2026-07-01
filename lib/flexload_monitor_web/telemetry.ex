@@ -2,11 +2,13 @@ defmodule FlexloadMonitorWeb.Telemetry do
   use Supervisor
   import Telemetry.Metrics
 
+  # Starts the telemetry supervisor under the application supervision tree.
   def start_link(arg) do
     Supervisor.start_link(__MODULE__, arg, name: __MODULE__)
   end
 
   @impl true
+  # Configures telemetry polling; reporters can be added here later.
   def init(_arg) do
     children = [
       # Telemetry poller will execute the given period measurements
@@ -19,6 +21,7 @@ defmodule FlexloadMonitorWeb.Telemetry do
     Supervisor.init(children, strategy: :one_for_one)
   end
 
+  # Lists Phoenix, database, and VM metrics available to telemetry reporters.
   def metrics do
     [
       # Phoenix Metrics
@@ -83,6 +86,7 @@ defmodule FlexloadMonitorWeb.Telemetry do
     ]
   end
 
+  # Defines custom periodic measurements; currently empty because the app only uses built-in metrics.
   defp periodic_measurements do
     [
       # A module, function and arguments to be invoked periodically.

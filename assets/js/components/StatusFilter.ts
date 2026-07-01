@@ -50,6 +50,7 @@ export default defineComponent({
       ["all", "normal", "warning", "critical", "offline"].includes(value),
   },
   setup(props, { emit }) {
+    // Finds the selected filter option so the component can announce the current state.
     const activeOption = computed(
       () =>
         filterOptions.find((option) => option.value === props.modelValue) ??

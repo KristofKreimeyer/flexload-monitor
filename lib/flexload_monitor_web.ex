@@ -17,8 +17,14 @@ defmodule FlexloadMonitorWeb do
   those modules here.
   """
 
+  @doc """
+  Lists the static asset paths Phoenix can serve from `priv/static`.
+  """
   def static_paths, do: ~w(assets fonts images favicon.ico robots.txt)
 
+  @doc """
+  Defines the imports and Phoenix behavior used by the router module.
+  """
   def router do
     quote do
       use Phoenix.Router, helpers: false
@@ -29,12 +35,18 @@ defmodule FlexloadMonitorWeb do
     end
   end
 
+  @doc """
+  Defines the behavior used by Phoenix channel modules.
+  """
   def channel do
     quote do
       use Phoenix.Channel
     end
   end
 
+  @doc """
+  Defines controller imports, formats, gettext, Inertia helpers, and route helpers.
+  """
   def controller do
     quote do
       use Phoenix.Controller, formats: [:html, :json]
@@ -48,6 +60,9 @@ defmodule FlexloadMonitorWeb do
     end
   end
 
+  @doc """
+  Defines the shared imports and aliases used by HTML and component modules.
+  """
   def html do
     quote do
       use Phoenix.Component
@@ -61,6 +76,7 @@ defmodule FlexloadMonitorWeb do
     end
   end
 
+  # Keeps common template helpers in one quoted block for all HTML modules.
   defp html_helpers do
     quote do
       # Translation
@@ -81,6 +97,9 @@ defmodule FlexloadMonitorWeb do
     end
   end
 
+  @doc """
+  Defines compile-time verified route helpers and the `~p` sigil configuration.
+  """
   def verified_routes do
     quote do
       use Phoenix.VerifiedRoutes,

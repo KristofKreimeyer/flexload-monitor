@@ -53,21 +53,26 @@ const statusDetails: Record<DistrictStatus, StatusDetails> = {
   },
 }
 
+// Formats kilowatt values for compact metric labels and accessibility text.
 const formatKilowatts = (kilowatts: number) =>
   new Intl.NumberFormat("en", {
     maximumFractionDigits: 0,
   }).format(kilowatts)
 
+// Converts a machine status into the human-readable status label.
 const statusLabel = (status: DistrictStatus) => statusDetails[status].label
 
+// Converts a district record into the tuple format expected by Leaflet.
 const districtLatLng = (district: District): LatLngTuple => [
   district.coordinates.latitude,
   district.coordinates.longitude,
 ]
 
+// Builds the map bounds that Leaflet should fit around all visible districts.
 const districtBounds = (districts: District[]): LatLngBoundsExpression =>
   districts.map((district) => districtLatLng(district))
 
+// Creates a styled Leaflet div marker that reflects the district status.
 const createMarkerIcon = (leaflet: LeafletModule, district: District): DivIcon =>
   leaflet.divIcon({
     className: "",
@@ -80,6 +85,7 @@ const createMarkerIcon = (leaflet: LeafletModule, district: District): DivIcon =
     popupAnchor: [0, -18],
   })
 
+// Adds one label/value row to the popup definition list.
 const appendMetric = (
   list: HTMLDListElement,
   label: string,
@@ -100,6 +106,7 @@ const appendMetric = (
   list.append(row)
 }
 
+// Builds popup DOM manually because Leaflet expects real DOM nodes or HTML strings.
 const createPopupContent = (district: District, onSelect: () => void) => {
   const container = document.createElement("article")
   container.className = "min-w-52 space-y-3"
@@ -152,6 +159,7 @@ export default defineComponent({
     let markers: Marker[] = []
     let resizeObserver: ResizeObserver | null = null
 
+    // Aggregates visible districts for the accessible map summary.
     const districtTotals = computed(() =>
       props.districts.reduce(
         (totals, district) => ({
@@ -166,6 +174,7 @@ export default defineComponent({
       )
     )
 
+    // Explains the current map state for screen readers and users who cannot inspect the visual map.
     const summary = computed(() => {
       if (props.districts.length === 0) {
         return "No synthetic district map data is available."
@@ -180,6 +189,7 @@ export default defineComponent({
       ].join(" ")
     })
 
+    // Replaces all Leaflet markers so they stay in sync with the active district list.
     const renderMarkers = () => {
       if (!leaflet || !map) {
         return
@@ -208,6 +218,7 @@ export default defineComponent({
       }
     }
 
+    // Loads Leaflet only in the browser and creates the map once the container exists.
     const initializeMap = async () => {
       if (!mapElement.value || map) {
         return

@@ -36,11 +36,13 @@ const statusDetails: Record<
   },
 }
 
+// Formats district load/generation values for the detail metrics.
 const formatKilowatts = (kilowatts: number) =>
   new Intl.NumberFormat("en", {
     maximumFractionDigits: 0,
   }).format(kilowatts)
 
+// Creates one reusable metric block for the selected district panel.
 const metric = (label: string, value: string) =>
   h("div", { class: "rounded-lg border border-slate-700/70 bg-slate-950/35 p-3" }, [
     h(
@@ -63,6 +65,7 @@ export default defineComponent({
     },
   },
   setup(props) {
+    // Resolves the selected district status into labels, classes, and operator notes.
     const status = computed(() =>
       props.district ? statusDetails[props.district.status] : null
     )

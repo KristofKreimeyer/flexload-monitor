@@ -6,6 +6,7 @@ defmodule FlexloadMonitor.Application do
   use Application
 
   @impl true
+  # Starts the Phoenix application supervision tree and keeps each child process isolated.
   def start(_type, _args) do
     children = [
       FlexloadMonitorWeb.Telemetry,
@@ -27,6 +28,7 @@ defmodule FlexloadMonitor.Application do
   # Tell Phoenix to update the endpoint configuration
   # whenever the application is updated.
   @impl true
+  # Propagates runtime configuration changes to the Phoenix endpoint during releases.
   def config_change(changed, _new, removed) do
     FlexloadMonitorWeb.Endpoint.config_change(changed, removed)
     :ok

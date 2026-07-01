@@ -58,6 +58,7 @@ export default defineComponent({
     },
   },
   setup(props) {
+    // Maps the semantic KPI status to the labels and classes used by the card.
     const status = computed(() => statusDetails[props.status])
 
     return () =>

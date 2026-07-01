@@ -23,10 +23,12 @@ export type DashboardProps = {
   kpis: DashboardKpis
 }
 
+// Converts backend kilowatt values into dashboard megawatt display strings.
 const formatMegawatts = (kilowatts: number) => (kilowatts / 1000).toFixed(1)
 
 const dashboardDataEndpoint = "/dashboard/data"
 
+// Copies the Inertia props so refreshes can replace local state without mutating props.
 const copyDashboardProps = (props: DashboardProps): DashboardProps => ({
   districts: [...props.districts],
   measurements: [...props.measurements],
@@ -34,6 +36,7 @@ const copyDashboardProps = (props: DashboardProps): DashboardProps => ({
   kpis: { ...props.kpis },
 })
 
+// Converts aggregate KPI values into the presentation model expected by KpiCard.
 const buildKpiCards = (
   dashboardKpis: DashboardKpis
 ): Array<{
@@ -108,14 +111,18 @@ export default defineComponent({
     },
   },
   setup(props: DashboardProps) {
+    // Holds the dashboard snapshot currently shown on screen.
     const dashboardData = ref<DashboardProps>(copyDashboardProps(props))
     const statusFilter = ref<DistrictStatusFilter>("all")
     const selectedDistrictId = ref<string | null>(null)
     const isRefreshing = ref(false)
     const refreshError = ref<string | null>(null)
     const lastUpdatedAt = ref(new Date())
+
+    // Rebuilds card props whenever the latest KPI snapshot changes.
     const kpiCards = computed(() => buildKpiCards(dashboardData.value.kpis))
 
+    // Applies the active status filter before data reaches the map and detail panel.
     const filteredDistricts = computed(() => {
       if (statusFilter.value === "all") {
         return dashboardData.value.districts
@@ -126,6 +133,7 @@ export default defineComponent({
       )
     })
 
+    // Resolves the currently selected district after filtering has been applied.
     const selectedDistrict = computed(
       () =>
         filteredDistricts.value.find(
@@ -133,6 +141,7 @@ export default defineComponent({
         ) ?? null
     )
 
+    // Clears the selection if the selected district disappears from the active filter.
     watch(filteredDistricts, (districts) => {
       if (
         selectedDistrictId.value &&
@@ -142,6 +151,7 @@ export default defineComponent({
       }
     })
 
+    // Syncs local state when Inertia sends a fresh server-side prop payload.
     watch(
       () => props,
       (latestProps) => {
@@ -151,6 +161,7 @@ export default defineComponent({
       { deep: true }
     )
 
+    // Fetches a fresh JSON snapshot without navigating away from the dashboard.
     const refreshDashboardData = async () => {
       if (isRefreshing.value) {
         return
